@@ -69,6 +69,7 @@ jobs:
       
      
       - name: Build patched SPIRV-Tools
+        shell: bash
         run: |
           rm -rf SPIRV-Tools
 
@@ -78,11 +79,15 @@ jobs:
           git fetch origin pull/5534/head:pr-5534
           git checkout pr-5534
 
-          # Gunakan SPIRV-Headers sesuai commit yang dipatok upstream
           git submodule sync --recursive
           git submodule update --init --recursive
 
-          # Pastikan tidak menggunakan hasil build lama
+          # Fallback jika submodule tidak tersedia
+          if [ ! -f external/spirv-headers/include/spirv/unified1/spirv.h ]; then
+            git clone https://github.com/KhronosGroup/SPIRV-Headers.git \
+              external/spirv-headers
+          fi
+
           rm -rf build
 
           cmake -S . -B build \
@@ -93,7 +98,6 @@ jobs:
 
           cmake --build build --parallel 2
           cmake --install build
-
 
       - name: Set SPIRV-Tools environment
         run: |
