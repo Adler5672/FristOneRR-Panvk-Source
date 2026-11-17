@@ -68,27 +68,27 @@ jobs:
 
       
      
+     
       - name: Build patched SPIRV-Tools
         shell: bash
         run: |
+          set -eux
+
           rm -rf SPIRV-Tools
 
           git clone https://github.com/KhronosGroup/SPIRV-Tools.git
           cd SPIRV-Tools
 
-          git fetch origin pull/5534/head:pr-5534
-          git checkout pr-5534
+          # Exact commit containing PR #5534
+          git checkout e99a5c033ea2c933d0403b97db590212fb5a2542
 
-          git submodule sync --recursive
-          git submodule update --init --recursive
+          # Pin compatible SPIRV-Headers revision
+          git clone https://github.com/KhronosGroup/SPIRV-Headers.git \
+            external/spirv-headers
 
-          # Fallback jika submodule tidak tersedia
-          if [ ! -f external/spirv-headers/include/spirv/unified1/spirv.h ]; then
-            git clone https://github.com/KhronosGroup/SPIRV-Headers.git \
-              external/spirv-headers
-          fi
-
-          rm -rf build
+          cd external/spirv-headers
+          git checkout db5a00f8cebe81146cafabf89019674a3c4bf03d
+          cd ../..
 
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
