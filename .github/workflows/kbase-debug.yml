@@ -66,14 +66,23 @@ jobs:
           python3 -m pip install --break-system-packages \
             'meson>=1.4.0,<2'
 
+      
       - name: Build patched SPIRV-Tools
         run: |
+          rm -rf SPIRV-Tools
+
           git clone https://github.com/KhronosGroup/SPIRV-Tools.git
           cd SPIRV-Tools
+
           git fetch origin pull/5534/head:pr-5534
           git checkout pr-5534
 
+          git submodule update --init --recursive
+
+          rm -rf external/spirv-headers
           git clone https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers
+
+          rm -rf build
 
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
@@ -83,6 +92,7 @@ jobs:
 
           cmake --build build --parallel 2
           cmake --install build
+
       - name: Set SPIRV-Tools environment
         run: |
           echo "$HOME/spirv-tools/bin" >> "$GITHUB_PATH"
