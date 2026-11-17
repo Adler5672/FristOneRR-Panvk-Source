@@ -106,28 +106,32 @@ jobs:
           echo "PKG_CONFIG_PATH=$HOME/spirv-tools/lib/pkgconfig:$HOME/spirv-tools/lib/aarch64-linux-gnu/pkgconfig" >> "$GITHUB_ENV"
           echo "CMAKE_PREFIX_PATH=$HOME/spirv-tools" >> "$GITHUB_ENV"
           echo "LD_LIBRARY_PATH=$HOME/spirv-tools/lib:$HOME/spirv-tools/lib/aarch64-linux-gnu" >> "$GITHUB_ENV"
-      - name: Configure
+      - name: Configure Mesa
+        shell: bash
         run: |
-          meson setup "${BUILD_DIR}" \
-            --buildtype=debug \
-            -Dprefix="${INSTALL_PREFIX}" \
-            -Dlibdir=lib \
-            -Dbuild-tests=false \
-            -Degl=enabled \
-            -Degl-native-platform=auto \
-            -Denable-glcpp-tests=false \
-            -Dgallium-drivers=panfrost \
-            -Dgbm=enabled \
-            -Dgles1=disabled \
-            -Dgles2=enabled \
-            -Dglx=disabled \
-            -Dllvm=enabled \
-            -Dopengl=false \
-            -Dpanfrost-kmds=kbase,panthor \
-            -Dplatforms=wayland \
-            -Dvalgrind=disabled \
+          set -eux
+
+          export PATH="$HOME/spirv-tools/bin:$PATH"
+          export LD_LIBRARY_PATH="$HOME/spirv-tools/lib:$HOME/spirv-tools/lib/aarch64-linux-gnu:${LD_LIBRARY_PATH:-}"
+          export PKG_CONFIG_PATH="$HOME/spirv-tools/lib/pkgconfig:$HOME/spirv-tools/lib/aarch64-linux-gnu/pkgconfig:${PKG_CONFIG_PATH:-}"
+
+          which spirv-link
+          spirv-link --help | grep -i allow-pointer-mismatch
+
+          meson setup build \
+            --prefix=/usr \
+            --libdir=lib \
+            -Dplatforms=x11 \
             -Dvulkan-drivers=panfrost \
-            -Dzstd=disabled
+            -Dpanfrost-kmds=kbase \
+            -Dgallium-drivers=[] \
+            -Dopengl=false \
+            -Dgbm=disabled \
+            -Dglx=disabled \
+            -Degl=disabled \
+            -Dllvm=disabled \
+            -Ddraw-use-llvm=false \
+            -Dbuild-tests=false
 
       - name: Build
         run: meson compile -C "${BUILD_DIR}" -j "$(nproc)"
