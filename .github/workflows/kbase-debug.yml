@@ -30,6 +30,7 @@ jobs:
             --no-install-recommends \
             bison \
             git \
+            cmake ninja-build \
             build-essential \
             ca-certificates \
             flex \
