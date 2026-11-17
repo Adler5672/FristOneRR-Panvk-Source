@@ -100,12 +100,12 @@ jobs:
           cmake --install build
 
       - name: Set SPIRV-Tools environment
+        shell: bash
         run: |
           echo "$HOME/spirv-tools/bin" >> "$GITHUB_PATH"
-          echo "$HOME/spirv-tools/lib" >> "$GITHUB_LIBRARY_PATH"
-          echo "PKG_CONFIG_PATH=$HOME/spirv-tools/lib/pkgconfig" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_PATH=$HOME/spirv-tools/lib/pkgconfig:$HOME/spirv-tools/lib/aarch64-linux-gnu/pkgconfig" >> "$GITHUB_ENV"
           echo "CMAKE_PREFIX_PATH=$HOME/spirv-tools" >> "$GITHUB_ENV"
-
+          echo "LD_LIBRARY_PATH=$HOME/spirv-tools/lib:$HOME/spirv-tools/lib/aarch64-linux-gnu" >> "$GITHUB_ENV"
       - name: Configure
         run: |
           meson setup "${BUILD_DIR}" \
