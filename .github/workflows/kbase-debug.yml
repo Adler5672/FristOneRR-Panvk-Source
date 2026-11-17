@@ -129,7 +129,7 @@ jobs:
             -Dgbm=disabled \
             -Dglx=disabled \
             -Degl=disabled \
-            -Dllvm=disabled \
+            -Dllvm=enabled \
             -Ddraw-use-llvm=false \
             -Dbuild-tests=false
 
