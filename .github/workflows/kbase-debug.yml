@@ -110,6 +110,9 @@ jobs:
 
       - name: Configure Mesa
         shell: bash
+        env:
+          CC: clang
+          CXX: clang++
         run: |
           set -eux
 
