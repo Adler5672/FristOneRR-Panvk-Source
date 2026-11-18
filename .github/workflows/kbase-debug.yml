@@ -1,3 +1,4 @@
+
 name: PanVK kbase debug Mesa
 
 'on':
@@ -12,24 +13,32 @@ jobs:
   build-kbase-debug:
     name: Build PanVK kbase debug Mesa
     runs-on: ubuntu-26.04-arm
+
     container:
-      image: debian:13
+      image: ubuntu:26.04
+
     env:
       ARTIFACT_NAME: mesa-panvk-kbase-debug-aarch64
       BUILD_DIR: build
       INSTALL_PREFIX: /opt/mesa
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install dependencies
+        shell: bash
         run: |
+          set -eux
+
           apt-get update
+
           DEBIAN_FRONTEND=noninteractive apt-get install -y \
             --no-install-recommends \
             bison \
             git \
-            cmake ninja-build \
+            cmake \
+            ninja-build \
             libxrandr-dev \
             build-essential \
             ca-certificates \
@@ -43,7 +52,6 @@ jobs:
             libwayland-dev \
             libxcb-present-dev \
             libwayland-egl-backend-dev \
-            ninja-build \
             pkgconf \
             python3 \
             python3-mako \
@@ -54,74 +62,53 @@ jobs:
             llvm-dev \
             glslang-tools \
             spirv-tools \
-            libunwind-18-dev \
+            spirv-headers \
+            libunwind-dev \
             wayland-protocols \
             libxshmfence-dev \
-            libxcb1-dev libxcb-cursor-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-shape0-dev libxcb-shm0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev libxcb-xkb-dev libx11-xcb-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libxcb1-dev \
+            libxcb-cursor-dev \
+            libxcb-icccm4-dev \
+            libxcb-image0-dev \
+            libxcb-keysyms1-dev \
+            libxcb-randr0-dev \
+            libxcb-render-util0-dev \
+            libxcb-shape0-dev \
+            libxcb-shm0-dev \
+            libxcb-sync-dev \
+            libxcb-xfixes0-dev \
+            libxcb-xinerama0-dev \
+            libxcb-xkb-dev \
+            libx11-xcb-dev \
+            libxkbcommon-dev \
+            libxkbcommon-x11-dev \
             zlib1g-dev \
             zip
+
           LLVM_MAJOR="$(llvm-config --version | cut -d. -f1)"
+
           DEBIAN_FRONTEND=noninteractive apt-get install -y \
             --no-install-recommends \
             "libclc-${LLVM_MAJOR}-dev" \
             "libllvmspirvlib-${LLVM_MAJOR}-dev"
 
       - name: Install Meson
+        shell: bash
         run: |
           python3 -m pip install --break-system-packages \
             'meson>=1.4.0,<2'
 
-      
-     
-     
-      - name: Build patched SPIRV-Tools
+      - name: Check SPIRV-Tools
         shell: bash
         run: |
           set -eux
+          which spirv-link
+          spirv-link --help
 
-          rm -rf SPIRV-Tools
-
-          git clone https://github.com/KhronosGroup/SPIRV-Tools.git
-          cd SPIRV-Tools
-
-          # Exact commit containing PR #5534
-          git checkout e99a5c033ea2c933d0403b97db590212fb5a2542
-
-          # Pin compatible SPIRV-Headers revision
-          git clone https://github.com/KhronosGroup/SPIRV-Headers.git \
-            external/spirv-headers
-
-          cd external/spirv-headers
-          git checkout db5a00f8cebe81146cafabf89019674a3c4bf03d
-          cd ../..
-
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX="$HOME/spirv-tools" \
-            -DSPIRV_SKIP_TESTS=ON \
-            -DSPIRV_WERROR=OFF
-
-          cmake --build build --parallel 2
-          cmake --install build
-
-      - name: Set SPIRV-Tools environment
-        shell: bash
-        run: |
-          echo "$HOME/spirv-tools/bin" >> "$GITHUB_PATH"
-          echo "PKG_CONFIG_PATH=$HOME/spirv-tools/lib/pkgconfig:$HOME/spirv-tools/lib/aarch64-linux-gnu/pkgconfig" >> "$GITHUB_ENV"
-          echo "CMAKE_PREFIX_PATH=$HOME/spirv-tools" >> "$GITHUB_ENV"
-          echo "LD_LIBRARY_PATH=$HOME/spirv-tools/lib:$HOME/spirv-tools/lib/aarch64-linux-gnu" >> "$GITHUB_ENV"
       - name: Configure Mesa
         shell: bash
         run: |
           set -eux
-
-          export PATH="$HOME/spirv-tools/bin:$PATH"
-          export LD_LIBRARY_PATH="$HOME/spirv-tools/lib:$HOME/spirv-tools/lib/aarch64-linux-gnu:${LD_LIBRARY_PATH:-}"
-          export PKG_CONFIG_PATH="$HOME/spirv-tools/lib/pkgconfig:$HOME/spirv-tools/lib/aarch64-linux-gnu/pkgconfig:${PKG_CONFIG_PATH:-}"
-
-          which spirv-link
-          spirv-link --help | grep -i allow-pointer-mismatch
 
           meson setup build \
             --prefix=/usr \
@@ -139,18 +126,29 @@ jobs:
             -Dbuild-tests=false
 
       - name: Build
-        run: meson compile -C "${BUILD_DIR}" -j "$(nproc)"
+        shell: bash
+        run: |
+          set -eux
+          meson compile -C "${BUILD_DIR}" -j "$(nproc)"
 
       - name: Install
+        shell: bash
         run: |
+          set -eux
+
           rm -rf artifacts
           mkdir -p artifacts/install-root
+
           meson install -C "${BUILD_DIR}" \
             --destdir "${GITHUB_WORKSPACE}/artifacts/install-root"
 
       - name: Create zip package
+        shell: bash
         run: |
+          set -eux
+
           cd "${GITHUB_WORKSPACE}/artifacts/install-root"
+
           zip -r \
             "${GITHUB_WORKSPACE}/${ARTIFACT_NAME}.zip" \
             opt/mesa
