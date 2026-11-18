@@ -38,6 +38,7 @@ jobs:
             bison \
             git \
             cmake \
+            clang \
             ninja-build \
             libxrandr-dev \
             build-essential \
@@ -129,6 +130,9 @@ jobs:
 
       - name: Build
         shell: bash
+        env:
+          CC: clang
+          CXX: clang++
         run: |
           set -eux
           meson compile -C "${BUILD_DIR}" -j "$(nproc)"
