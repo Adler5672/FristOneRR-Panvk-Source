@@ -63,6 +63,7 @@ jobs:
             glslang-tools \
             spirv-tools \
             spirv-headers \
+            spirv-tools-dev \
             libunwind-dev \
             wayland-protocols \
             libxshmfence-dev \
