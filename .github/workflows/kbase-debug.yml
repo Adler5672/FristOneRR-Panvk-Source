@@ -30,6 +30,7 @@ jobs:
             bison \
             git \
             cmake ninja-build \
+            libxrandr-dev \
             build-essential \
             ca-certificates \
             flex \
