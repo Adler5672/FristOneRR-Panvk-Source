@@ -33,6 +33,7 @@ jobs:
             build-essential \
             ca-certificates \
             flex \
+            libxcb-dri3-dev \
             libdrm-dev \
             libelf-dev \
             libexpat1-dev \
