@@ -40,6 +40,7 @@ jobs:
             libclang-cpp-dev \
             libclang-dev \
             libwayland-dev \
+            libxcb-present-dev \
             libwayland-egl-backend-dev \
             ninja-build \
             pkgconf \
