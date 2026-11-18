@@ -129,9 +129,9 @@ jobs:
             -Degl=disabled \
             -Dllvm=enabled \
             -Ddraw-use-llvm=false \
-            -Dbuild-tests=false
-            -Dbuildtype=release
-            -Dpanfrost-rust=false
+            -Dbuild-tests=false \
+            -Dbuildtype=release \
+            -Dpanfrost-rust=false \
 
       - name: Build
         shell: bash
@@ -142,9 +142,9 @@ jobs:
           set -eux
           meson compile -C "${BUILD_DIR}" -j "$(nproc)"
 
-       - name: Upload libpan SPIR-V on failure
+      - name: Upload libpan SPIR-V on failure
         if: failure()
-        ses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
              name: libpan-spv
              path: ${{ github.workspace }}/build/src/panfrost/libpan/*.spv
