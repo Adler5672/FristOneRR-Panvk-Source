@@ -66,6 +66,7 @@ jobs:
             spirv-tools-dev \
             libunwind-dev \
             wayland-protocols \
+            spirv-tools-headers \
             libxshmfence-dev \
             libxcb1-dev \
             libxcb-cursor-dev \
@@ -112,7 +113,7 @@ jobs:
           set -eux
 
           meson setup build \
-            --prefix=/usr \
+            --prefix="${INSTALL_PREFIX}" \
             --libdir=lib \
             -Dplatforms=x11 \
             -Dvulkan-drivers=panfrost \
